@@ -67,10 +67,5 @@ public class MouseController : MonoBehaviour
             speed = 0f;
         }
     }
-
-    private void OnCollisionEnter2D(Collision2D coll) {
-        if(coll.gameObject.tag == "Player"){
-            Destroy(this.gameObject);
-        }
-    }
+    
 }

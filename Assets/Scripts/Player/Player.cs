@@ -1,12 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
 
     private Rigidbody2D rb2D;
     private SpriteRenderer sprite;
+
+    private PolygonCollider2D poly2D;
 
     private Shoot shoot;
 
@@ -20,11 +23,14 @@ public class Player : MonoBehaviour
     private float dir;      // direção que o bird vai voar
 
     private bool isCorner;  // indica que colidiu com corner esquerdo ou direito
+
+    private bool isDeath;
     
     void Start()
     {
         rb2D = GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
+        poly2D = GetComponent<PolygonCollider2D>();
         shoot = GetComponent<Shoot>();
 
         _z = transform.rotation.eulerAngles.z;
@@ -37,6 +43,12 @@ public class Player : MonoBehaviour
     void Update()
     {
 
+        if(transform.position.y <= -10f){
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        if(isDeath)
+            return;
 
         if(shoot.isClick || rb2D.velocity.x > 6f || rb2D.velocity.x < -6f){
 
@@ -81,6 +93,9 @@ public class Player : MonoBehaviour
     }
 
     void rotBird(){
+
+        if(isDeath)
+            return;
 
         if(shoot.isClick)
             return;
@@ -129,10 +144,27 @@ public class Player : MonoBehaviour
 
     }
 
+    private void OnCollisionEnter2D(Collision2D col) {
+        if(col.gameObject.tag == "GroundShader"){
+            SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+        }
+
+        if(col.gameObject.tag == "Orc" && (rb2D.velocity.x > 6f || rb2D.velocity.x < -6f)){
+            GameController.instance.OrcKill();  // indica que matou um orc
+            Destroy(col.gameObject);
+        }else if(col.gameObject.tag == "Orc"){
+            Death();
+        }
+    }
+
     private void OnCollisionStay2D(Collision2D coll) {
         if(coll.gameObject.tag == "Corner"){
             isCorner = true;
         }
     }
 
+    void Death(){
+        isDeath = true;
+        poly2D.enabled = false;
+    }
 }
